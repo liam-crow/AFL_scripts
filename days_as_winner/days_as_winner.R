@@ -4,13 +4,13 @@ library(dplyr)
 library(lubridate)
 library(zoo)
 
-results <- get_match_results() %>% filter(Date > "2019-01-01")
+results <- get_match_results() %>% filter(Date > "2018-01-01")
 
 data <- results %>% select(Date, Home.Team, Away.Team, Margin)
 
 teams <- unique(data$Home.Team)
 date_vec <- tibble(
-  Date = seq.Date(as.Date("2019-01-01"),as.Date("2019-12-31"), by = "day")#,
+  Date = seq.Date(as.Date("2018-01-01"),as.Date("2019-12-31"), by = "day")#,
   # Win = NA_integer_
 )
 
@@ -27,12 +27,13 @@ for (i in 1:18){
   days_WL$Win_YN[1] <- 0
   
   days_WL$Win_all <- zoo::na.locf(days_WL$Win_YN)
-  days_as_winner  <- sum(days_WL$Win_all)
+  days_WL_2019 <- days_WL %>% filter(Date > "2019-01-01")
+  days_as_winner  <- sum(days_WL_2019$Win_all)
   
   team_days_as_winner <- tibble(team = team, days_as_winner = days_as_winner)
   agg <- rbind(agg, team_days_as_winner)
 }
 
-agg %>% arrange(-days_as_winner)
+agg_sorted <- agg %>% arrange(-days_as_winner)
 
-write.csv(agg_sorted, "days_as_winner.csv", row.names = F)
+write.csv(agg_sorted, "days_as_winner/days_as_winner.csv", row.names = F)
