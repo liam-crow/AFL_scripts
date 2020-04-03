@@ -1,4 +1,5 @@
 # devtools::install_github("jimmyday12/fitzRoy")
+# install.packages('ggrepel')
 library(fitzRoy)
 library(dplyr)
 library(tidyr)
@@ -14,7 +15,7 @@ team_colours <- c(
     'Syd' = '#ed171f',
     'StK' = '#ed0f05',
     'Ess' = '#cc2031',
-    'Rich'= '#fbef00',
+    'Rich'= '#e0d016',
     'Melb'= '#0f1131',
     'Haw' = '#4d2004',
     'BL'  = '#a30046',
@@ -57,36 +58,44 @@ afltables_modern <- afltables %>%
         )
     )
 
-afltables_clangers <- afltables_modern %>% group_by(round, playing_for) %>% 
-    summarise(
-        sum_k = sum(kicks),
-        sum_h = sum(handballs),
-        sum_c = sum(clangers)
-    ) %>% mutate(sum_disp = sum_k + sum_h)
+afltables_k_hb <- afltables_modern %>% 
+    select(round, playing_for, id, first_name, surname, kicks, handballs) %>% 
+    mutate(
+        label_tf = if_else(sqrt(kicks^2 + handballs^2) >= 26, T, F),
+        first_name_initial = substring(first_name, 1, 1)
+    ) %>% 
+    unite(
+        names_short, first_name_initial, surname, sep = ' '
+    )
+
+quantile(afltables_k_hb$kicks, probs = c(.9)) # 16 =< kicks
+quantile(afltables_k_hb$handballs, probs = c(.9)) # 13 =< handballs
+library(ggplot2)
+library(gganimate)
+library(ggrepel)
 
 theme_set(theme_light())
 p <-
     ggplot(
-        afltables_clangers, #%>% filter(round < 2), 
-        aes(x = sum_c, y = sum_disp, color = playing_for, label = playing_for)
+        afltables_k_hb,# %>% filter(round == 4), 
+        aes(x = kicks, y = handballs, color = playing_for)
     ) + 
     geom_point() +
-    geom_text(aes(label = playing_for), hjust = -0.2, vjust = 0) +
-    labs(x = "Clangers", y = "Disposals") + 
+    geom_text_repel(aes(label = if_else(label_tf == T, names_short, NULL), fontface = 2), hjust = -0.2, vjust = 0) +
+    labs(x = "Kicks", y = "Handballs") + 
     theme(legend.position = "none") +
     scale_color_manual(values = team_colours)
+p
 
 p_a <- p + transition_time(round) + 
-    labs(title = "Disposals vs Clangers per Team per Round
+    labs(title = "Kicks vs Handballs per Player per Round
 Season 2019, Round {frame_time}, Useless AFL Stats") +
     enter_fade() + exit_fade() +
     ease_aes('quartic-in-out')
 
-4/400
-View(afltables_clangers)
-animate(p_a, nframes = 500, fps = 16, end_pause = 40)
+animate(p_a, nframes = 700, fps = 16, end_pause = 40)
 
-anim_save("Clangers_v_Disposals.gif")
+anim_save("Kicks_v_Handballs.gif")
 
 
 

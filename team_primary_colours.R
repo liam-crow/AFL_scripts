@@ -1,0 +1,20 @@
+team_colours <- c(
+    'Carl'= '#0e1e2d',
+    'Geel'= '#1c3c63',
+    'Adel'= '#002b5c',
+    'Syd' = '#ed171f',
+    'StK' = '#ed0f05',
+    'Ess' = '#cc2031',
+    'Rich'= '#fbef00',
+    'Melb'= '#0f1131',
+    'Haw' = '#4d2004',
+    'BL'  = '#a30046',
+    'GCS' = '#d93e39',
+    'Freo'= '#2a1a54',
+    'Coll'= '#000000',
+    'PA'  = '#01b5b6',
+    'WB'  = '#014896',
+    'WCE' = '#062ee2',
+    'GWS' = '#f15c22',
+    'NthM'= '#013b9f'
+)
