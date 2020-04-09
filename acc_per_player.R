@@ -7,6 +7,22 @@ library(lubridate)
 afltables <- fitzRoy::get_afltables_stats(start_date = "1900-01-01")
 names(afltables) <- snakecase::to_snake_case(names(afltables))
 
+afltables %>% 
+    group_by(season) %>% 
+    summarise(
+        sum_goals = sum(goals),
+        sum_behinds = sum(behinds)
+    ) %>% 
+    mutate(
+        sum_goals = if_else(is.na(sum_goals), 0, sum_goals),
+        sum_behinds = if_else(is.na(sum_behinds), 0, sum_behinds),
+        acc = sum_goals/(sum_goals + sum_behinds)
+    ) %>% 
+    filter(
+        sum_goals > 40,
+        season > 1965
+    ) %>% arrange(-acc)
+
 # accuracy by season
 afltables %>% 
     group_by(season, id, first_name, surname) %>% 
