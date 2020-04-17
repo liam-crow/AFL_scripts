@@ -8,7 +8,6 @@ library(snakecase)
 library(stringr)
 
 afltables <- fitzRoy::get_afltables_stats(start_date = "2000-01-01")
-
 names(afltables) <- to_snake_case(names(afltables))
 
 afl_gf <- afltables %>% select(season, round, first_name, surname, playing_for, home_team, away_team, home_score, away_score) %>% 
