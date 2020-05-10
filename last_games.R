@@ -16,5 +16,7 @@ afltables %>%
     arrange(desc(date)) %>% 
     filter(row_number() %in% 1:3, games >= 3) %>% #, max(row_number()) == 2) %>% 
     mutate(against = if_else(playing_for == home_team, away_team, home_team)) %>% 
-    mutate(no_uniq = length(unique(against))) %>% 
+    mutate(no_uniq = length(unique(against))) %>% #View()
+    filter(no_uniq == 1) %>% 
+    select(id, first_name, surname) %>% distinct()
     View()

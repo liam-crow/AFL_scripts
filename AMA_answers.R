@@ -112,8 +112,8 @@ afltables %>% group_by(id, first_name, surname) %>% summarise() %>% unite(name, 
         grepl('n', name),
         grepl('u', name),
         grepl('y', name)
-        )
-    
+    )
+
 afltables %>% 
     select(season, round, id, first_name, surname, playing_for, home_team, home_score, away_team, away_score) %>% 
     mutate(GF_win = 
@@ -139,8 +139,9 @@ afltables %>% select(season, round, date, home_team, away_team, id, first_name, 
     ) %>% 
     arrange(-dif) %>% View()
 
- <- afltables %>% 
-    select(season, round, id, first_name, surname, playing_for, home_team, home_score, away_team, away_score) %>% 
+data_200_gf <-
+    afltables %>% 
+    select(season, round, date, id, first_name, surname, playing_for, home_team, home_score, away_team, away_score) %>% 
     mutate(GF_win = 
                case_when(
                    round == 'GF' & playing_for == home_team & home_score > away_score ~ T,
@@ -149,8 +150,10 @@ afltables %>% select(season, round, date, home_team, away_team, id, first_name, 
                )
     ) %>% 
     group_by(id, first_name, surname) %>% 
-    summarise(
-        Total = sum(GF_win),
-        n = n()
-        ) %>% 
-    filter(n >= 200)
+    arrange(date) %>% mutate(games_played = row_number()) %>% ungroup() %>% 
+    filter(GF_win == T) %>% 
+    group_by(id, first_name, surname) %>% 
+    arrange(date) %>% mutate(prem_no = row_number()) 
+
+
+write.csv(data_200_gf, "data_200_gf.csv")

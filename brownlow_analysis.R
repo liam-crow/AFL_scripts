@@ -1,16 +1,11 @@
 
-# devtools::install_github("jimmyday12/fitzRoy")
-# install.packages("patchwork")
-
-library(fitzRoy)
 library(dplyr)
 library(tidyr)
 library(lubridate)
 library(snakecase)
+library(stringr)
 
-afltables <- fitzRoy::get_afltables_stats(start_date = '1990-01-01')
-
-names(afltables_all) <- to_snake_case(names(afltables))
+source("load_afltables.R")
 
 afl_id <- afltables %>% select(id, first_name, surname) %>% distinct()
 
@@ -42,14 +37,14 @@ afltables_clean  <-
       margin < 0 ~ 'L',
       TRUE ~ 'D'
     ),
-  ) %>% select(-home_team, -away_team) %>% 
+  ) %>% #select(-home_team, -away_team) %>% 
   group_by(id) %>% arrange(date) %>% 
   mutate(games_played = row_number()) %>% 
   ungroup()
 
 # afltables_clean %>% select(playing_for, home_team, away_team, home_score, away_score, margin, home_away, win_loss) %>% distinct() %>% View()
 
-afltables_group <- afltables_clean %>% group_by(date, venue, local_start_time) %>% 
+afltables_group <- afltables_clean %>% group_by(date, venue, home_team, away_team) %>% 
   mutate(game_id = as.character(group_indices())) %>% ungroup()
 
 afltables_mod  <- afltables_group %>% filter(between(date, as.Date('2017-01-01'), as.Date('2018-01-01')))
