@@ -21,10 +21,11 @@ sum_no_points <- afltables %>% select(date, id, first_name, surname, kicks, hand
     mutate(
         cumsum_disp  = cumsum(disp),
         cumsum_score = cumsum(score)
-    ) #%>% #stop here for 
+    ) %>% #stop here for 
     filter(cumsum_score == 0) %>% 
     filter(cumsum_disp == max(cumsum_disp))
 View(sum_no_points)
+
 rle_calc <- function(column) {
     t <- rle(column)
     return(max(t$lengths))
