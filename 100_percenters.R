@@ -11,6 +11,6 @@ afltables %>%
     group_by(id, first_name, surname) %>% 
     summarise(
         debut = min(date),
-        sum_op = sum(one_percenters)
-    ) %>% 
-    filter(sum_op == 101)
+        sum_op = sum(one_percenters),
+        pf = paste(unique(playing_for), collapse = ', ')
+    ) %>% View()
