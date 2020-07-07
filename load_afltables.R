@@ -2,7 +2,7 @@ library(fitzRoy)
 library(dplyr)
 
 afltables <- fitzRoy::get_afltables_stats()
-names(afltables) <- to_snake_case(names(afltables))
+names(afltables) <- snakecase::to_snake_case(names(afltables))
 
 # fix cam raynor stats
 afltables <- afltables %>%
@@ -24,6 +24,10 @@ afltables <- afltables %>%
             TRUE ~ playing_for
         )
     )
+
+afltables <- afltables %>% 
+    filter(playing_for == home_team | playing_for == away_team) %>% distinct()
+    
 
 # add disposals, 
 # home/away, win/loss/draw per player
