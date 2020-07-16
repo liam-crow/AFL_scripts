@@ -31,10 +31,10 @@ p2 <- ggplot(score_bounces, aes(y = s_bounces, x = season)) +
     geom_smooth() +
     labs(
         x = "Season",
-        y = "Team Total Bounces",
+        y = "Team Total Bounces (per game)",
         colour = "Season"
     ) +
-    ggtitle("Team Bounces by Year")
+    ggtitle("Team Bounces by Year", subtitle = '@crow_data_sci')
 
 p3 <- ggplot(score_bounces, aes(y = playing_for_score, x = season)) + 
     geom_point(alpha = 0.15) +
