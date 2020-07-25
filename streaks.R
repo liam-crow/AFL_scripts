@@ -40,3 +40,12 @@ afltables %>%
 afltables %>% 
     select(season, round, date, id, first_name, surname, marks) %>% 
     filter(id == '11743') %>% arrange(date) %>% View()
+
+afltables %>% 
+    select(season, round, date, id, first_name, surname, playing_for_score) %>% distinct() %>% 
+    mutate(tf = !(playing_for_score %% 2 == 1)) %>% 
+    group_by(id, first_name, surname) %>% 
+    arrange(date) %>% 
+    mutate(streak_id = cumsum(tf)) %>% 
+    group_by(id, first_name, surname, streak_id) %>% 
+    mutate(streak = row_number()-1) %>% ungroup() %>% View()
