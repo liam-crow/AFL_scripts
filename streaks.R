@@ -54,3 +54,7 @@ afltables %>%
 
 afltables %>% distinct(id, first_name, surname) %>% View()
     
+afltables %>% filter(surname == 'Primus') %>% 
+    select(id, first_name, surname, playing_for_score) %>% 
+    mutate(is_prime = is_prime(playing_for_score)) %>% 
+    group_by(is_prime) %>% count()
