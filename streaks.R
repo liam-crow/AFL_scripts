@@ -31,8 +31,18 @@ afltables %>%
 
 afltables %>% 
     filter(season >= 1965) %>% 
-    select(season, round, date, id, first_name, surname, disposals, tackles, marks) %>% distinct() %>% 
-    mutate(tf = !(marks == 5)) %>% 
+    select(season, round, date, id, first_name, surname, disposals) %>% 
+    mutate(tf = !(disposals == 0)) %>% 
+    group_by(id, first_name, surname) %>% 
+    arrange(date) %>% 
+    mutate(streak_id = cumsum(tf)) %>% 
+    group_by(id, first_name, surname, streak_id) %>% 
+    mutate(streak = row_number()-1) %>% ungroup() %>% View()
+
+afltables %>% 
+    filter(season >= 1999) %>% 
+    select(season, round, date, id, first_name, surname, bounces) %>% distinct() %>% 
+    mutate(tf = !(bounces == 0)) %>% 
     group_by(id, first_name, surname) %>% 
     arrange(date) %>% 
     mutate(streak_id = cumsum(tf)) %>% 
