@@ -1,4 +1,4 @@
-library(readxl)
+# library(readxl)
 library(dplyr)
 library(tidyr)
 
@@ -22,55 +22,42 @@ team_colours <- c(
     'Western Bulldogs'  = '#014896',
     'Footscray'  = '#014896',
     'West Coast' = '#062ee2',
-    'Greater Western Sydney' = '#f15c22',
+    'GWS Giants' = '#f15c22',
     'North Melbourne'= '#013b9f'
 )
 
-year <- '2020'
-ladder <- readxl::read_excel("ladders.xlsx", sheet = year)
+library(googlesheets4)
 
-names(ladder) <- snakecase::to_snake_case(names(ladder))
+pos <- 'MID' #RUC, DEF, MID, FWD
 
-ladder_long <- ladder %>% 
-    mutate(team = gsub('\\*','',team)) %>% 
-    pivot_longer(
-        -team,
-        names_to = 'round',
-        values_to = 'rank'
-    ) %>% 
-    mutate(round = as.integer(round))
+sc_own <- googlesheets4::read_sheet('1KGQiJgPJ_8etFixBl4DzfAbkdoAF6eESDlEda9pCiYg',sheet = pos) %>% 
+    mutate(ownership = 100 * ownership)
 
-last_round <- max(ladder_long$round)
+last_round <- max(sc_own$round)
 
-# ladder_long %>% 
-#     group_by(round) %>% 
-#     summarise(
-#         unique_chars = length(unique(rank))
-#     ) %>% View()
+sc_ruc_cross <- crossing(round = 1:last_round, sc_own %>% distinct(player_name, team_name, team_abbr))
+
+sc_own_full <- left_join(sc_ruc_cross, sc_own, by = c('round', 'player_name','team_name','team_abbr')) %>% 
+    mutate(ownership = if_else(is.na(ownership),0,ownership))
 
 library(ggplot2)
 library(gganimate)
 library(hrbrthemes)
 library(png)
-logo <- readPNG("MediumSquareLogo.png")
 
-ladder_long <- ladder_long %>% 
-    mutate(width = if_else(team == 'Port Adelaide',T,F))
-
-lad_anim <- ggplot(ladder_long, aes(y = rank, x = round, group = team, colour = team)) +
+sc_anim <- ggplot(sc_own_full, aes(y = ownership, x = round, group = player_name, colour = team_name)) +
     # annotation_raster(logo, xmin = 17, xmax = 23, ymin = -13, ymax = -19, interpolate = T) +
     # annotate('text', x = 18, y = 16.5, label = "bold(\"Useless AFL Stats\")", parse = T) +
-    geom_line(aes(size = width)) + #width
+    geom_line() + #aes(size = width)
     scale_size_manual(values = c("TRUE" = 2, "FALSE" = 0.5)) +
     geom_point(size = 1.5) +
-    geom_text(aes(x = last_round + 0.5, label = team), hjust = 0) +
-    geom_segment(aes(xend = last_round, yend = rank), linetype = 2) +
-    geom_segment(aes(x = 1, y = 8.5, xend = last_round, yend = 8.5), colour = 'red', size = 1.1) +
-    scale_y_reverse(breaks = seq(1,18,1), minor_breaks = NULL, expand = c(0.02,0.02)) +
+    geom_text(aes(x = last_round + 0.5, label = if_else(ownership>20, player_name,'')), hjust = 0) +
+    geom_segment(aes(xend = last_round, yend = ownership), linetype = 2) +
+    scale_y_continuous(breaks = seq(0,100,10), minor_breaks = NULL, expand = c(0.05,0.02)) +
     scale_x_continuous(breaks = seq(1,last_round,1), minor_breaks = NULL, expand = c(0,0)) +
     theme_minimal() +
     xlab("") + ylab("") +
-    ggtitle(paste(year ,"AFL Ladder"), subtitle = "Useless AFL Stats") +
+    ggtitle(paste("2020 SuperCoach",pos,"% ownership")) + #subtitle = "Useless AFL Stats"
     scale_color_manual(values = team_colours) +
     theme(
         legend.position = 'none',
@@ -82,5 +69,6 @@ lad_anim <- ggplot(ladder_long, aes(y = rank, x = round, group = team, colour = 
     coord_cartesian(clip = 'off')
 
 # lad_anim
-animate(lad_anim, nframes = 440, fps = 20, end_pause = 40, height = 10, width = 15, units = 'cm', res = 110)
-anim_save(paste0('ladder_',year,'_UAS.gif'))
+animate(sc_anim, nframes = 240, fps = 20, end_pause = 40, height = 10, width = 15, units = 'cm', res = 110)
+anim_save(paste0('2020_',pos,'_ownership.gif'))
+

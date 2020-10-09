@@ -443,3 +443,28 @@ afl_games_letter %>%
     summarise(n = n()) %>% 
     group_by(season, round, date, playing_for) %>% 
     summarise(diff = max(n)-min(n)) %>% View()
+
+afltables %>% 
+    select(date, id, first_name, surname, jumper_no) %>% 
+    group_by(id, first_name, surname) %>% 
+    arrange(date) %>% mutate(games_played = row_number()) %>% 
+    filter(games_played == max(games_played), games_played == jumper_no) %>% View()
+
+afltables %>% select(season, round, id, first_name, surname) %>% 
+    filter(round == "QF" | round == "EF" | round == "SF" | round == "PF" | round == "GF") %>%
+    group_by(id, first_name, surname) %>% 
+    summarise(played_gf = if_else(any(round == 'GF'), 'Y','N'), games_played = n()) %>%
+    View()
+
+afltables %>% 
+    select(season, date, round, playing_for, opp, w_l) %>% 
+    filter(!round %in% 1:30) %>% distinct() %>% 
+    arrange(date) %>% 
+    group_by(season, playing_for) %>% 
+    summarise(
+        comb = paste(opp, round, w_l, collapse = ', '),
+        games = n()
+    ) %>% 
+    group_by(playing_for, comb) %>% 
+    mutate(n = n()) %>% View()
+    
