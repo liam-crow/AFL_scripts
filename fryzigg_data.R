@@ -1,12 +1,21 @@
 library(dplyr)
 library(lubridate)
 
-fryzigg_data <- as_tibble(fitzRoy::get_fryzigg_stats(start = '2000')) %>% 
+fryzigg_data <- as_tibble(fitzRoy::fetch_player_stats(2000:2030, comp = 'AFLM', source = 'fryzigg')) %>% 
     mutate(
         date = as.Date(match_date),
         season = year(date),
         local_start_time = hms(match_local_time),
-        .before = match_date
+        .before = match_date,
+        fantasy_points = kicks*3 + 
+            handballs*2 +
+            marks*3 +
+            tackles*4 +
+            free_kicks_for + 
+            free_kicks_against*-3 +
+            hitouts +
+            goals*6 +
+            behinds
     )
 
 # fryzigg_2020 %>% 

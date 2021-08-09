@@ -1,0 +1,65 @@
+Package: fitzRoy
+Title: Easily Scrape and Process AFL Data
+Version: 0.3.2.9000
+Authors@R: 
+    c(person(given = "James",
+             family = "Day",
+             role = c("cre", "aut"),
+             email = "jamesthomasday@gmail.com"),
+      person(given = "Robert",
+             family = "Nguyen",
+             role = "aut",
+             email = "nguyen.n.robert@gmail.com"),
+      person(given = "Matthew",
+             family = "Erbs",
+             role = "ctb",
+             email = "matthew.erbs@merbla.com"),
+      person(given = "Oscar",
+             family = "Lane",
+             role = "aut",
+             email = "lane.oscar@gmail.com"),
+      person(given = "Jason",
+             family = "Zivkovic",
+             role = "ctb",
+             email = "jaseziv83@gmail.com"))
+Description: An easy package for scraping and processing Australia Rules Football (AFL)
+    data. 'fitzRoy' provides a range of functions for accessing publicly available data 
+    from 'AFL Tables' <https://afltables.com>, 'Footy Wire' <https://www.footywire.com> and
+    'The Squiggle' <https://squiggle.com.au>. Further functions allow for easy processing, 
+    cleaning and transformation of this data into formats that can be used for analysis. 
+License: GPL-3
+URL: https://jimmyday12.github.io/fitzRoy/,
+        https://github.com/jimmyday12/fitzRoy
+BugReports: https://github.com/jimmyday12/fitzRoy/issues
+Depends: R (>= 3.3)
+Imports: dplyr, httr, jsonlite, lubridate, magrittr, purrr, readr,
+        rlang (>= 0.1.2), rvest, stringr (>= 1.3.0), tidyr (>= 1.0.0),
+        tidyselect, xml2, tibble, glue
+Suggests: covr, ggplot2, knitr, rmarkdown, testthat, roxygen2, elo,
+        spelling, curl
+VignetteBuilder: knitr
+ByteCompile: true
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.0
+Language: en-US
+RemoteType: github
+RemoteHost: api.github.com
+RemoteRepo: fitzRoy
+RemoteUsername: jimmyday12
+RemoteRef: master
+RemoteSha: 8d606197452cdc254f28b16cd39ad6fcc6d251f2
+GithubRepo: fitzRoy
+GithubUsername: jimmyday12
+GithubRef: master
+GithubSHA1: 8d606197452cdc254f28b16cd39ad6fcc6d251f2
+NeedsCompilation: no
+Packaged: 2020-06-22 11:58:15 UTC; liam.crowhurst
+Author: James Day [cre, aut],
+  Robert Nguyen [aut],
+  Matthew Erbs [ctb],
+  Oscar Lane [aut],
+  Jason Zivkovic [ctb]
+Maintainer: James Day <jamesthomasday@gmail.com>
+Built: R 4.0.1; ; 2020-06-22 11:58:17 UTC; windows

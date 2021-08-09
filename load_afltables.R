@@ -1,7 +1,7 @@
 library(fitzRoy)
 library(dplyr)
 
-afltables <- fitzRoy::get_afltables_stats()
+afltables <- fitzRoy::fetch_player_stats_afltables()
 names(afltables) <- snakecase::to_snake_case(names(afltables))
 
 # fix cam raynor stats
@@ -34,7 +34,33 @@ afltables <- afltables %>%
 
 afltables <- afltables %>% 
     mutate(
+        jumper_no = as.numeric(gsub('[^0-9]','', jumper_no)),
         disposals = kicks + handballs,
+        
+        playing_for_short = case_when(
+            playing_for == 'Carlton' ~ 'Carl',
+            playing_for == 'Fitzroy' ~ 'Fitz',
+            playing_for == 'Sydney' ~ 'Syd',
+            playing_for == 'Essendon' ~ 'Ess',
+            playing_for == 'Geelong' ~ 'Geel',
+            playing_for == 'Melbourne' ~ 'Melb',
+            playing_for == 'St Kilda' ~ 'StK',
+            playing_for == 'Collingwood' ~ 'Coll',
+            playing_for == 'Adelaide' ~ 'Ade',
+            playing_for == 'Hawthorn' ~ 'Haw',
+            playing_for == 'West Coast' ~ 'WCE',
+            playing_for == 'Western Bulldogs' ~ 'WB',
+            playing_for == 'North Melbourne' ~ 'NthM',
+            playing_for == 'Richmond' ~ 'Rich',
+            playing_for == 'Brisbane Bears' ~ 'BB',
+            playing_for == 'Fremantle' ~ 'Frem',
+            playing_for == 'Brisbane Lions' ~ 'BL',
+            playing_for == 'Port Adelaide' ~ 'PA',
+            playing_for == 'Gold Coast' ~ 'GC',
+            playing_for == 'Greater Western Sydney' ~ 'GWS',
+            playing_for == 'University' ~ 'Uni',
+            T ~ playing_for
+        ),
         
         playing_for_score = case_when(
             playing_for == home_team ~ home_score,
@@ -76,7 +102,23 @@ afltables <- afltables %>%
         oq_3_b = if_else(playing_for == home_team, aq_3_b, hq_3_b),
         oq_4_g = if_else(playing_for == home_team, aq_4_g, hq_4_g),
         oq_4_b = if_else(playing_for == home_team, aq_4_b, hq_4_b)
-    ) 
+    ) %>%
+    mutate(
+        possessions = contested_possessions + uncontested_possessions,
+        fantasy_points = kicks*3 + 
+            handballs*2 +
+            marks*3 +
+            tackles*4 +
+            frees_for + 
+            frees_against*-3 +
+            hit_outs +
+            goals*6 +
+            behinds
+    ) %>% 
+    group_by(id, first_name, surname) %>% 
+    arrange(date) %>% 
+    mutate(games_played = row_number()) %>% ungroup()
+    
 
 #### Run length encoding (Consecutive) functions
 # USE THIS ONE
