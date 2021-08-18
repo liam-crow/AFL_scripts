@@ -152,6 +152,7 @@ write.csv(custom_ladder, 'aflxepl_2020.csv')
 View(custom_ladder)
 
 
+
 afltables %>% 
     select(season, round, playing_for, playing_for_score, w_l) %>% distinct() %>% 
     filter(playing_for_score >= 100, w_l == 'L') %>% 
@@ -186,5 +187,248 @@ afltables %>%
         n = n(),
         names = paste(first_name, surname, collapse = ', ')
     ) %>% View()
+
+# Tommy Lucin
+# What’s the most amount of players with 
+# Mc in their surname in one team?
+
+# Brisbane Lions McStay, McCarthy, McLuggage, McInerney, McCreary and Macrae
+afltables %>% 
+    select(season, round, date, home_team, away_team, playing_for, id, first_name, surname) %>% 
+    filter(grepl('^mc|^mac', surname, ignore.case = T)) %>%
+    group_by(season, round, date, home_team, away_team) %>% 
+    summarise(
+        comb = paste(surname, collapse = ', '),
+        n = n()
+    ) %>% View()
+
+goals_in_a_row <- NULL
+for (i in 1:24) {
     
+    goals_in_a_row_round <- afltables %>% 
+        filter(season >= 1965, round %in% 1:i) %>%
+        select(season, round, date, id, first_name, surname, goals, behinds) %>% 
+        group_by(season, id, first_name, surname) %>% 
+        summarise(
+            t_goals = sum(goals),
+            t_behinds = sum(behinds),
+            n = n(),
+            .groups = 'drop'
+        ) %>% 
+        filter(t_behinds == 0) %>% 
+        arrange(-t_goals) %>% head(5) %>% 
+        mutate(round = i)
+    goals_in_a_row <- rbind(goals_in_a_row, goals_in_a_row_round)
+}
+
+# goals_in_a_row_round <- afltables %>% 
+#     filter(season >= 1965) %>%
+#     select(season, round, date, id, first_name, surname, goals, behinds) %>% 
+#     group_by(season, id, first_name, surname) %>% 
+#     summarise(
+#         t_goals = sum(goals),
+#         t_behinds = sum(behinds),
+#         n = n(),
+#         .groups = 'drop'
+#     ) %>% 
+#     filter(t_behinds == 0) %>% 
+#     arrange(-t_goals) %>% head(5) %>% 
+#     mutate(round = 'all')
+# goals_in_a_row <- rbind(goals_in_a_row, goals_in_a_row_round)
+goals_in_a_row %>% View()
+
+# Rhys Mathewson
+# What’s the most goals in a row to start a career without a behind ?
+# Ginnivan for pies has 6-0 and made me interested
+
+games_played_goals <- afltables %>% 
+    filter(season >= 1965) %>% 
+    select(id, first_name, surname, games_played, goals, behinds)
+
+games_played_goals_total <- NULL
+for (i in 1:100) {
+    games_played_goals_ind <- games_played_goals %>% 
+        filter(games_played %in% c(1:i)) %>% 
+        group_by(id, first_name, surname) %>% 
+        summarise(
+            t_goals = sum(goals),
+            t_behinds= sum(behinds),
+            .groups = 'drop'
+        ) %>% 
+        filter(t_behinds == 0) %>% 
+        arrange(-t_goals) %>% head(5) %>% 
+        mutate(games_played = i)
+    games_played_goals_total <- rbind(games_played_goals_total, games_played_goals_ind)
+}
+
+View(games_played_goals_total)
+
+#Ryan Fitzgerald, Will Snelling and Zach Merrett 
+# went 11.0 (complete games) before kicking a point
+
+#Ethan Keele
+# joe daniher has about 35 to 40% of 
+# the total Brisbane lions bounces this 
+# season. is this the most by a player?
+
+afltables %>% 
+    select(season, round, playing_for, id, first_name, surname, bounces) %>% 
+    group_by(season, playing_for) %>% 
+    mutate(t_bounces = sum(bounces)) %>% 
+    group_by(season, id, first_name, surname) %>% 
+    mutate(t_ind_bounces = sum(bounces)) %>% ungroup() %>% 
+    mutate(ratio = round(t_ind_bounces/t_bounces*100),2) %>% 
+    select(season, playing_for, id, first_name, surname, ratio, t_bounces, t_ind_bounces) %>% 
+    distinct() %>% View()
+
+afltables %>% 
+    select(season, round, playing_for, opp, starts_with('pq'), w_l) %>% 
+    distinct() %>% 
+    filter(
+        pq_1_g == pq_1_b,
+        pq_2_g == pq_2_b,
+        pq_3_g == pq_3_b,
+        pq_4_g == pq_4_b,
+    ) %>% View()
+
+# Anthony Duke
+# What’s the most a player had lost by 
+# and been chaired off and/or retired at the same time ?
+
+afltables %>% 
+    select(season, round, playing_for_score, opp_score, id, first_name, surname, games_played) %>% 
+    group_by(id, first_name, surname) %>% 
+    filter(games_played == max(games_played)) %>% 
+    mutate(margin = playing_for_score - opp_score) %>% View()
+
+afltables %>% 
+    select(season, round, date, playing_for, opp, w_l) %>% distinct() %>% 
+    filter(w_l == "W") %>% 
+    group_by(playing_for, opp) %>% 
+    filter(date == max(date)) %>% ungroup() %>% 
+    mutate(
+        diff_date = Sys.Date() - date,
+        comb = paste0(playing_for,' vs ',opp,' ',diff_date,' days (',season,' r',round,')')
+    ) %>% View()
+
+# James Otto
+# Hey guys! I was thinking if Melbourne play 
+# geelong in the first week of finals and the 
+# grand final they could play each other 4 
+# times this calendar year - think this has 
+# happened a few times but has a team ever won all 4?
+# Thanks!
+
+afltables %>% 
+    select(season, round, date, playing_for, opp, w_l) %>% 
+    filter(season >= 1965, w_l == 'W') %>% 
+    distinct() %>% 
+    group_by(season, playing_for, opp) %>% 
+    summarise(
+        n = n(),
+        comb = paste(round, collapse = ', ')
+    ) %>% View()
+
+#David Bravos
+# Hey team, for freo yesterday there 
+# was Monday playing game 353. Next 
+# most experienced player was 
+# Colyer in game 128. Is that the 
+# biggest diff between most and 2nd 
+# most experienced players on a team sheet?
+
+afltables %>% 
+    select(date, season, round, playing_for, id, first_name, surname, games_played) %>% 
+    group_by(date, season, round, playing_for) %>% 
+    arrange(desc(games_played)) %>% 
+    slice(1:2) %>% 
+    summarise(
+        diff = max(games_played) - min(games_played),
+        players = paste(first_name, surname, games_played, collapse = ', ')
+    ) %>% View()
+
+# Owen Missen
+# Hey guys, when did a team last score 
+# 63% or more of their total score in 
+# the first qtr as Freo did?
+
+afltables %>% 
+    filter(season > 1964) %>% 
+    select(season, round, date, playing_for, pq_1_g, pq_1_b, playing_for_score, w_l) %>% distinct() %>% 
+    mutate(
+        q1_score = pq_1_g*6 + pq_1_b,
+        q1_score_ratio = round(q1_score/playing_for_score*100,2)
+    ) %>% View()
+
+afltables %>% 
+    select(date, season, round, playing_for, w_l) %>% distinct() %>% 
+    filter(playing_for %in% c('Geelong','Port Adelaide','Fremantle'), w_l == 'W') %>% 
+    group_by(season, round) %>% 
+    summarise(
+        n = n()
+    ) %>% View()
+
+
+afltables %>% 
+    select(playing_for, id, first_name, surname, w_l) %>% 
+    group_by(id, first_name, surname) %>% 
+    mutate(n_teams = length(unique(playing_for))) %>% 
+    group_by(playing_for, id, first_name, surname) %>% 
+    mutate(games_per_team = n()) %>% 
+    filter(w_l == 'W') %>% 
+    mutate(wins_per_team = n()) %>% ungroup() %>% 
+    filter(games_per_team >= 50, n_teams == 2) %>% 
+    select(playing_for, id, first_name, surname, n_teams, wins_per_team, games_per_team) %>% 
+    distinct() %>% 
+    mutate(win_ratio = round(wins_per_team/games_per_team*100,2)) %>% View()
+group_by(id, first_name, surname, n_teams) %>% 
+    summarise(
+        n_teams_i = length(unique(playing_for)),
+        win_ratio_diff = max(win_ratio) - min(win_ratio),
+        max_win_r = max(win_ratio),
+        min_win_r = min(win_ratio)
+    ) %>% View()
+
+afltables %>% 
+    select(season, round, date, id, first_name, surname, tackles, frees_for) %>% 
+    View()
+
+id_name <- unique(afltables$first_name)
+
+afltables %>% 
+    select(season, round, date, playing_for, id, first_name, surname) %>% 
+    filter(surname %in% id_name) %>% 
+    group_by(season, round, date, playing_for) %>% 
+    summarise(
+        n = n(),
+        comb = paste(first_name, surname, collapse = ', ')
+    ) %>% View()
+
+afltables %>% 
+    filter(season > 1964) %>% 
+    select(date, season, round, home_team, away_team, jumper_no) %>% 
+    group_by(date, season, round, home_team, away_team) %>% 
+    summarise(
+        low_jumper = min(jumper_no),
+        high_jumper = max(jumper_no),
+        diff = high_jumper - low_jumper
+    ) %>% View()
+
+# Alastair Wills
+# Eg Bont plays Dusty, both wear no 4, that 
+# counts as 1 number used. What is the most/fewest 
+# numbers to appear in a game
+
+afltables %>% 
+    filter(season > 1964) %>% 
+    select(date, season, round, home_team, away_team, jumper_no) %>% 
+    distinct() %>% 
+    group_by(date, season, round, home_team, away_team) %>% 
+    summarise(n = n()) %>% View()
+
+afltables %>% 
+    select(date, season, round, playing_for, id, first_name, surname, goals, games_played) %>% 
+    filter(playing_for == 'Richmond', games_played == 1, goals >= 3) %>% 
+    View()
+
 
