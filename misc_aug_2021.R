@@ -380,8 +380,8 @@ afltables %>%
     filter(games_per_team >= 50, n_teams == 2) %>% 
     select(playing_for, id, first_name, surname, n_teams, wins_per_team, games_per_team) %>% 
     distinct() %>% 
-    mutate(win_ratio = round(wins_per_team/games_per_team*100,2)) %>% View()
-group_by(id, first_name, surname, n_teams) %>% 
+    mutate(win_ratio = round(wins_per_team/games_per_team*100,2)) %>%
+    group_by(id, first_name, surname, n_teams) %>% 
     summarise(
         n_teams_i = length(unique(playing_for)),
         win_ratio_diff = max(win_ratio) - min(win_ratio),
@@ -396,12 +396,20 @@ afltables %>%
 id_name <- unique(afltables$first_name)
 
 afltables %>% 
-    select(season, round, date, playing_for, id, first_name, surname) %>% 
+    select(season, round, date, playing_for, id, first_name, surname, w_l) %>% 
     filter(surname %in% id_name) %>% 
     group_by(season, round, date, playing_for) %>% 
     summarise(
         n = n(),
         comb = paste(first_name, surname, collapse = ', ')
+    ) %>% View()
+
+afltables %>% 
+    select(season, round, date, playing_for, id, first_name, surname, w_l) %>% 
+    filter(surname %in% id_name, round == 'GF', w_l == 'W') %>% 
+    group_by(id, first_name, surname) %>% 
+    summarise(
+        n = n()
     ) %>% View()
 
 afltables %>% 
@@ -431,4 +439,259 @@ afltables %>%
     filter(playing_for == 'Richmond', games_played == 1, goals >= 3) %>% 
     View()
 
+afltables %>% 
+    select(id, first_name, surname, games_played, date) %>% 
+    group_by(id, first_name, surname) %>% 
+    filter(games_played == max(games_played)) %>% 
+    group_by(first_name) %>% mutate(first_n = n()) %>% 
+    group_by(surname) %>% mutate(last_n = n()) %>% View()
 
+fryzigg_data %>% 
+    select(player_id, player_first_name, player_last_name, player_height_cm) %>% 
+    distinct() %>% View()
+
+afltables %>% 
+    select(season, round, playing_for, opp, id, first_name, surname, games_played, w_l) %>% 
+    group_by(id, first_name, surname) %>% 
+    filter(games_played == max(games_played)) %>% View()
+
+afltables %>% 
+    select(season, date, round, playing_for, w_l) %>% 
+    distinct() %>% 
+    filter(w_l == 'D') %>% 
+    group_by(season, playing_for) %>% count() %>% View()
+
+
+#### new stats ####
+
+# Brayden
+# Hey guys love your work, I've got one 
+# that I dont think you guys have covered, 
+# I was wondering how many times a team 
+# has lost a qualifying final to a team 
+# then gone on to beat them in the grand 
+# final, and what was the biggest margin?
+
+afltables %>% 
+    select(date, season, round, playing_for, opp, playing_for_score, opp_score, w_l) %>% 
+    distinct() %>% arrange(date) %>% 
+    filter(season > 2000, round %in% c('QF','GF')) %>% 
+    mutate(margin = playing_for_score-opp_score) %>% 
+    group_by(season, playing_for, opp) %>% 
+    summarise(
+        n = n(),
+        comb = paste(round, w_l, margin, collapse = ' ')
+    ) %>% filter(n == 2, grepl("^QF L",comb)) %>% View()
+
+# Jack
+# What is the mos draws in one 
+# round and/or most in a season
+
+afltables %>% 
+    select(date, season, round, home_team, away_team, w_l, home_score) %>% 
+    distinct() %>% filter(w_l == 'D') %>% 
+    group_by(season, round) %>% count() %>% arrange(-n)
+
+#Ben 
+# most common draw score
+
+afltables %>% 
+    select(date, season, round, home_team, away_team, w_l, home_score) %>% 
+    distinct() %>% filter(w_l == 'D') %>% 
+    group_by(home_score) %>% count() %>% arrange(-n) %>% View()
+
+# Riley
+# Hey, suns beat swans by 40 earlier in the year, 
+# then yesterday Sydney got up by 87
+# 127 point swing across the two games 
+# this season, where does that sit?
+
+afltables %>% 
+    select(season, round, date, playing_for, opp, playing_for_score, opp_score) %>% 
+    distinct() %>% 
+    filter(round %in% 1:25) %>% 
+    mutate(margin = playing_for_score - opp_score) %>% 
+    group_by(season, playing_for, opp) %>% 
+    mutate(n = n()) %>% filter(n == 2) %>% 
+    mutate(diff = max(margin) - min(margin)) %>% View()
+
+# Ade in 1992 (vs Geel) r8 -123 then r23 +91, for a total diff of 214
+
+#John
+#most players on the same amount of touches
+
+afltables %>% 
+    select(date, season, round, home_team, away_team, disposals) %>% 
+    group_by(date, season, round, home_team, away_team, disposals) %>% 
+    count() %>% View()
+
+#Clancy
+#most draws in the final round
+
+afltables %>% 
+    select(season, round, date, playing_for, w_l) %>% 
+    distinct() %>% 
+    filter(round %in% c(1:25)) %>% 
+    group_by(season, playing_for) %>% 
+    filter(date == max(date)) %>% 
+    filter(w_l == 'D') %>% 
+    group_by(playing_for) %>% 
+    summarise(
+        n = n(),
+        comb = paste(season, collapse = ', ')
+    ) %>% View()
+
+#retiring on a multiple of 50
+afltables %>% 
+    select(id, first_name, surname, games_played) %>% 
+    # filter(games_played>=200) %>% 
+    group_by(id, first_name, surname) %>% 
+    filter(games_played == max(games_played)) %>% ungroup() %>% 
+    mutate(mult_50 = games_played %% 50 == 0) %>% 
+    group_by(mult_50) %>% count()
+
+# Glenn 
+# most retirements in a year
+
+afltables %>% 
+    select(season, id, first_name, surname, games_played) %>% 
+    group_by(id, first_name, surname) %>% 
+    filter(games_played == max(games_played)) %>% 
+    group_by(season) %>% count() %>% View()
+
+# Ian
+# games per year
+
+afltables %>% 
+    select(season, id, first_name, surname) %>% 
+    group_by(id, first_name, surname) %>% 
+    summarise(
+        games = n(),
+        seasons = length(unique(season))
+    ) %>% 
+    mutate(
+        games_per_seasons = games/seasons
+    ) %>% View()
+
+#finals to stat ratio
+afltables %>% 
+    select(season, date, round, id, first_name, surname, stat = behinds) %>% 
+    mutate(finals_yn = if_else(round %in% c(1:25),'N','Y')) %>% 
+    group_by(id, first_name, surname) %>% 
+    mutate(t_stat = sum(stat)) %>% 
+    group_by(id, first_name, surname, t_stat, finals_yn) %>% 
+    summarise(finals_t_stat = sum(stat)) %>% 
+    mutate(finals_ratio = round(finals_t_stat/t_stat*100,2)) %>% 
+    filter(finals_yn == 'Y') %>% arrange(-finals_ratio) %>% View()
+
+#Michael Cooke kicked 4 goals, all finals, a record
+#Joel Smith kicked 2 points, all finals
+unique(fryzigg_data$subbed)
+fryzigg_data %>% 
+    select(season, date, match_round, player_team, player_id, player_first_name, player_last_name, subbed, goals) %>% 
+    filter(subbed %in% c('Subbed In','Subbed Out')) %>% 
+    group_by(season, date, match_round, player_team) %>% 
+    summarise(
+        t_goals = sum(goals),
+        players = paste0(player_last_name,' (', subbed,') ', goals, collapse = ' & ')
+    ) %>% View()
+
+afltables %>% 
+    select(id, first_name, surname) %>% distinct() %>% 
+    group_by(surname) %>% count() %>% arrange(-n)
+
+afltables %>% 
+    select(season, round, date, playing_for, pq_3_g, pq_3_b, oq_3_g, oq_3_b, w_l) %>% distinct() %>% 
+    filter(season>=2000) %>% 
+    filter(pq_3_g*6 + pq_3_b < oq_3_g*6 + oq_3_b) %>% 
+    group_by(w_l) %>% 
+    summarise(
+        n = n(),
+    ) %>% 
+    mutate(
+        ratio = round(n/sum(n)*100,2)
+    ) %>% View()
+    
+# 13% chance of winning when trailing at 3qtime
+# 1% chance of drawing
+
+d1 <- afltables %>% 
+    select(season, round, playing_for, id, first_name, surname, stat = goals) %>% 
+    filter(round %in% c(1:25,'EF','QF')) %>%
+    # filter(round %in% c(1:25)) %>% 
+    mutate(goals_yn = stat>0) %>% 
+    group_by(season, playing_for) %>% 
+    mutate(team_games = length(unique(round))) %>% 
+    group_by(season, playing_for, id, first_name, surname, team_games, goals_yn) %>% 
+    count() %>% 
+    filter(goals_yn == T, n == team_games)
+
+left_join(d2,d1, by = c('season', 'playing_for', 'id', 'first_name', 'surname')) %>% 
+    replace_na(list(team_games.y = T,)) %>% 
+    filter(n.x != n.y) %>% View()
+
+#Zac
+#most disp in a finals game
+
+afltables %>% 
+    select(season, round, id, first_name, surname, disposals) %>% 
+    filter(!(round %in% c(1:25))) %>% View()
+
+#Luke
+# I wonder how many times a team has won a 
+# final after only scoring a behind in the 4th quarter!
+afltables %>% 
+    select(date, season, round, playing_for, opp, pq_3_g, pq_3_b, playing_for_score, opp_score) %>% 
+    distinct() %>% 
+    mutate(
+        q3_score = pq_3_g*6 + pq_3_b,
+        margin = playing_for_score - opp_score
+    ) %>% 
+    filter(
+        q3_score + 1 == playing_for_score,
+        margin > 0
+    ) %>% View()
+
+#Thomas
+# Gday, was wondering which team in the past 10 
+# seasons has had the heaviest overall mass of 
+# players take the field? I’m thinking a west 
+# coast with their big 3 forwards but dunno. Cheers
+fryzigg_data %>% 
+    select(season, player_team, player_weight_kg) %>% 
+    filter(season %in% 2011:2021) %>% 
+    drop_na() %>% 
+    group_by(player_team) %>% 
+    summarise(
+        avg_w = mean(player_weight_kg)
+    ) %>% View()
+
+fryzigg_data %>% 
+    select(season, player_id, player_first_name, player_last_name, time_on_ground_percentage, subbed) %>% 
+    filter(season == 2021) %>% 
+    group_by(season, player_id, player_first_name, player_last_name) %>% 
+    summarise(
+        n = n(),
+        avg_tog = mean(time_on_ground_percentage)
+    ) %>% View()
+    
+afltables %>% 
+    filter(disposals >0) %>% 
+    group_by(id, first_name, surname, disposals) %>% 
+    count() %>% View()
+
+#Jasper 
+# most starting initials
+
+afltables %>% 
+    select(season, round, date, playing_for, id, first_name, surname) %>% 
+    rowwise() %>% 
+    mutate(first_init = strsplit(first_name,'')[[1]][1]) %>% 
+    group_by(season, round, date, playing_for, first_init) %>% 
+    summarise(
+        n = n(),
+        name = paste0(first_name, collapse = ', ')
+    ) %>% View()
+
+afltables %>% 
+    select(season, playing_for, id, first_name, surname) %>% distinct() %>% View()
