@@ -695,3 +695,38 @@ afltables %>%
 
 afltables %>% 
     select(season, playing_for, id, first_name, surname) %>% distinct() %>% View()
+
+#markus
+# Eagles supporter here. They have had 3 peters 
+# peter matera 
+# Peter sumich 
+# Peter wilson
+# 
+# 3 chris’
+# Chris mainwearing
+# Chris lewis 
+# Chris waterman
+# 
+# 3 jacks
+# Jack darling 
+# Jack redden
+# Jack petrucelle
+afltables %>% 
+    select(date, season, round, playing_for, id, first_name, surname) %>% 
+    group_by(date, season, round, playing_for, first_name) %>% 
+    mutate(name_n = n()) %>% ungroup() %>% 
+    filter(name_n >= 3) %>% 
+    group_by(date, season, round, playing_for) %>% 
+    arrange(first_name) %>% 
+    summarise(
+        unique_names = length(unique(first_name)),
+        names_comb = paste(first_name, surname, collapse = ', ')
+    ) %>% View()
+
+afltables %>% 
+    select(season, date, round, home_team, away_team, id, first_name, surname) %>% 
+    group_by(season, date, round, home_team, away_team, surname) %>% 
+    summarise(
+        n = n(),
+        names_comb = paste(first_name, surname, collapse = ', ')
+    ) %>% View()

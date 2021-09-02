@@ -339,3 +339,49 @@ custom_ladder <- form_custom %>%
 
 write.csv(custom_ladder, 'aflxepl_2020.csv')
 View(custom_ladder)
+
+#### multiplicative ladder ####
+
+afltables_custom <- afltables %>% 
+    select(season, round, date, playing_for, pq_4_g, pq_4_b, oq_4_g, oq_4_b) %>% 
+    filter(
+        season == 2021,
+        !round %in% c('EF','GF','PF','QF','SF')
+    ) %>% 
+    distinct() %>% 
+    mutate(
+        playing_for_score = pq_4_g / pq_4_b,
+        opp_score = oq_4_g / oq_4_b,
+        w_l = case_when(
+            playing_for_score > opp_score ~ 'W',
+            playing_for_score < opp_score ~ 'L',
+            TRUE ~ 'D'
+        )
+    )
+
+form_custom <- afltables_custom %>% 
+    group_by(playing_for, w_l) %>% 
+    summarise(
+        s_score = sum(playing_for_score),
+        s_opp_score = sum(opp_score),
+        games = n(),
+        .groups = 'drop'
+    )
+
+custom_ladder <- form_custom %>% 
+    pivot_wider(
+        names_from = w_l,
+        values_from = games,
+        values_fill = list(games = 0)
+    ) %>% 
+    group_by(playing_for) %>% 
+    summarise(
+        W = sum(W),
+        D = sum(D),
+        L = sum(L),
+        `%` = round(sum(s_score)/sum(s_opp_score)*100, 2),
+        .groups = 'drop'
+    ) %>% 
+    mutate(P = W*4 + D*2) %>% arrange(-P, -`%`) # + D*2
+write.csv(custom_ladder, "custom_ladders/division_ladder.csv")
+
