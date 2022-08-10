@@ -22,5 +22,13 @@ fryzigg_data <- as_tibble(fitzRoy::fetch_player_stats(2000:2030, comp = 'AFLM', 
             frees_against*-3 +
             hit_outs +
             goals*6 +
-            behinds
+            behinds,
+        surname = case_when(
+            id == 12446 ~ 'Macpherson',
+            T ~ surname
+        ),
+        first_name = case_when(
+            id == 12957 ~ 'Josh',
+            T ~ first_name
+        )
     )

@@ -385,3 +385,83 @@ custom_ladder <- form_custom %>%
     mutate(P = W*4 + D*2) %>% arrange(-P, -`%`) # + D*2
 write.csv(custom_ladder, "custom_ladders/division_ladder.csv")
 
+#### finals ladder since Ess won ####
+
+afltables_custom <- afltables %>% 
+    select(date, season, round, date, playing_for, playing_for_score, opp_score, w_l) %>% 
+    filter(
+        date > "2004-09-04",
+        round %in% c('EF','GF','PF','QF','SF')
+    ) %>% 
+    distinct()
+
+form_custom <- afltables_custom %>% 
+    group_by(playing_for, w_l) %>% 
+    summarise(
+        s_score = sum(playing_for_score),
+        s_opp_score = sum(opp_score),
+        games = n(),
+        .groups = 'drop'
+    )
+
+custom_ladder <- form_custom %>% 
+    pivot_wider(
+        names_from = w_l,
+        values_from = games,
+        values_fill = list(games = 0)
+    ) %>% 
+    group_by(playing_for) %>% 
+    summarise(
+        W = sum(W),
+        D = sum(D),
+        L = sum(L),
+        `%` = round(sum(s_score)/sum(s_opp_score)*100, 2),
+        .groups = 'drop'
+    ) %>% 
+    mutate(P = W*4 + D*2) %>% arrange(-P, -`%`) # + D*2
+
+write.csv(custom_ladder, "custom_ladders/after_ess_fin_win.csv", row.names = F)
+
+#### 2022 ladder 3qt ####
+
+afltables_custom <- afltables %>% 
+    select(date, season, round, date, playing_for, pq_3_g, pq_3_b, oq_3_g, oq_3_b, opp_score) %>% 
+    filter(season == 2022) %>% 
+    distinct() %>% 
+    mutate(
+        playing_for_score = pq_3_g*6 + pq_3_b,
+        opp_score = oq_3_g*6 + oq_3_b,
+        w_l = case_when(
+            playing_for_score > opp_score ~ 'W',
+            playing_for_score < opp_score ~ 'L',
+            TRUE ~ 'D'
+        )
+    )
+
+form_custom <- afltables_custom %>% 
+    group_by(playing_for, w_l) %>% 
+    summarise(
+        s_score = sum(playing_for_score),
+        s_opp_score = sum(opp_score),
+        games = n(),
+        .groups = 'drop'
+    )
+
+custom_ladder <- form_custom %>% 
+    pivot_wider(
+        names_from = w_l,
+        values_from = games,
+        values_fill = list(games = 0)
+    ) %>% 
+    group_by(playing_for) %>% 
+    summarise(
+        W = sum(W),
+        D = sum(D),
+        L = sum(L),
+        `%` = round(sum(s_score)/sum(s_opp_score)*100, 2),
+        .groups = 'drop'
+    ) %>% 
+    mutate(P = W*4+ D*2) %>% arrange(-P, -`%`) # + D*2
+
+write.csv(custom_ladder, "custom_ladders/QT3_score.csv", row.names = F)
+

@@ -1,7 +1,9 @@
+
 library(fitzRoy)
 library(dplyr)
 
-afltables <- fitzRoy::fetch_player_stats_afltables()
+# fitzRoy_1.1.0.9000
+afltables <- fitzRoy::fetch_player_stats_afltables(1897:2022)
 names(afltables) <- snakecase::to_snake_case(names(afltables))
 
 # fix cam raynor stats
@@ -34,6 +36,7 @@ afltables <- afltables %>%
 
 afltables <- afltables %>% 
     mutate(
+        jumper_no_raw = jumper_no,
         jumper_no = as.numeric(gsub('[^0-9]','', jumper_no)),
         disposals = kicks + handballs,
         surname = gsub(' ','',surname),

@@ -8,7 +8,8 @@ library(stringr)
 cv_url <- "https://aflcoaches.com.au/awards/the-aflca-champion-player-of-the-year-award/leaderboard/"
 result_table <- NULL
 
-for (k in 2007:2021) {
+# for (k in 2007:2021) {
+for (k in 2021) {
     
     cv_url_season <- paste0("https://aflcoaches.com.au/awards/the-aflca-champion-player-of-the-year-award/leaderboard/",k,"/",k,"01")
     

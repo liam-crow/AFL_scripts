@@ -33,12 +33,12 @@ team_colours <- c(
 )
 
 #### defensive 1v1s ####
-season_choice = 2021
+season_choice = c(2021,2022)
 
 def_1v1_data <- fryzigg_data %>% 
     select(date, season, round, playing_for, contest_def_one_on_ones, contest_def_losses, height_cm) %>% 
     drop_na() %>%
-    filter(season == season_choice, round %in% c(1:25)) %>% 
+    filter(season %in% season_choice, round %in% c(1:25)) %>% 
     group_by(season, playing_for) %>% 
     summarise(
         n = length(unique(round)),
@@ -51,10 +51,11 @@ def_1v1_data <- fryzigg_data %>%
 p1 <- ggplot(def_1v1_data, aes(x = t_def_one_on_ones, y = loss_ratio, colour = playing_for)) + 
     geom_point() +
     scale_colour_manual(values = team_colours) +
-    geom_text_repel(aes(label = playing_for)) +
-    ggtitle(label = paste0(season_choice, ' Defensive 1v1 Team Averages'), subtitle = '@crow_data_sci') +
-    xlab('Average defensive 1v1s per game')+
-    ylab('Loss Percentage')+
+    geom_text_repel(aes(label = playing_for),size = 2) +
+    facet_grid(~season) +
+    labs(title = 'AFL Defensive 1v1 Team Averages (2021-2022)', caption = '@crow_data_sci') +
+    xlab('Average Defensive 1v1s per game')+
+    ylab('Percentage Lost') +
     theme(
         legend.position = 'none'
     )
@@ -63,7 +64,7 @@ def_1v1_data_ind <- fryzigg_data %>%
     select(date, season, round, playing_for, id, first_name, surname, contest_def_one_on_ones, contest_def_losses, height_cm) %>% 
     drop_na() %>% 
     # filter(height_cm <= 185) %>% 
-    filter(season == season_choice, round %in% c(1:25)) %>% 
+    filter(season %in% season_choice, round %in% c(1:25), playing_for == 'Essendon') %>% 
     group_by(season, playing_for, id, first_name, surname) %>% 
     summarise(
         n = length(unique(round)),
@@ -72,9 +73,10 @@ def_1v1_data_ind <- fryzigg_data %>%
         loss_ratio = round(t_def_one_on_ones_losses/t_def_one_on_ones*100,2),
         .groups = 'drop'
     ) %>% 
-    filter(n >= 5) %>% 
+    # filter(n >= 5) %>% 
     arrange(desc(t_def_one_on_ones)) %>% 
-    slice(1:25) %>% 
+    group_by(season) %>% 
+    slice(1:10) %>% 
     rowwise() %>% 
     mutate(
         name = paste(strsplit(first_name,'')[[1]][1], surname)
@@ -84,15 +86,21 @@ def_1v1_data_ind <- fryzigg_data %>%
 p2 <- ggplot(def_1v1_data_ind, aes(x = t_def_one_on_ones, y = loss_ratio, colour = playing_for)) + 
     geom_point() +
     scale_colour_manual(values = team_colours) +
-    geom_text_repel(aes(label = name)) +
-    ggtitle(label = paste0(season_choice, ' Defensive 1v1 Player Averages'), subtitle = "Top 25 avg def 1v1s, 5+ games") +
-    xlab('Average defensive 1v1s per game')+
-    ylab('Loss Percentage')+
+    geom_text_repel(aes(label = name),size = 2.5) +
+    facet_grid(~season) +
+    labs(title = 'Essendon Defensive 1v1 Player Averages (2021-2022)', caption = '@crow_data_sci') +
+    xlab('Average Defensive 1v1s per game')+
+    ylab('Percentage Lost')+
     theme(
         legend.position = 'none'
     )
+p1
+p2
 
-p1+p2
+ggsave(p1, filename = 'exploration_stuff/afl_avg.png', dpi = 600, type = 'cairo',
+       width = 16, height = 9, units = 'cm')
+ggsave(p2, filename = 'exploration_stuff/ess_ind_avg.png', dpi = 600, type = 'cairo',
+       width = 16, height = 9, units = 'cm')
 
 season_team_losses <- fryzigg_data %>% 
     select(season, playing_for, contest_def_losses) %>% 
@@ -100,7 +108,7 @@ season_team_losses <- fryzigg_data %>%
     group_by(season, playing_for) %>% 
     summarise(
         t_def_1v1_losses = sum(contest_def_losses)
-    ) %>% filter(season %in% 2020:2021)
+    ) %>% filter(season %in% 2020:2022)
 
 ggplot(season_team_losses, 
        aes(y = reorder(playing_for, t_def_1v1_losses), x = t_def_1v1_losses, fill = playing_for)) +
@@ -113,6 +121,7 @@ ggplot(season_team_losses,
         legend.position = 'none'
     ) +
     facet_wrap(~season)
+
 
 
 #### offensive 1v1s ####
